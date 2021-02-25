@@ -1,14 +1,14 @@
 const { Router } = require('express');
 // const { userController } = require('../controllers');
 const {userMiddlewares} = require('../middlewares');
-const {deleteUser,findUserByParams,findUsers, insertUser,updateUser} = require('../services/user.service')
-
+const {userController} = require('../controllers')
 const userRouter = Router();
 
-userRouter.post('/', userMiddlewares.checkUserValydyty, insertUser);
-userRouter.get('/', findUsers);
-userRouter.get('/:params', findUserByParams);
-userRouter.put('/:userId', updateUser);
-userRouter.delete('/:userId', deleteUser);
+userRouter.post('/', userMiddlewares.checkUserValydyty, userController.createUser);
+userRouter.get('/', userController.getUsers);
+userRouter.get('/:params',userController.getUserByParams);
+userRouter.put('/:userId', userController.updateUser);
+userRouter.delete('/:userId', userController.deleteUser);
 
 module.exports = userRouter;
+np

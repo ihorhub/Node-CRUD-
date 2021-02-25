@@ -1,58 +1,92 @@
-const userService = require('../services/user.service');
+
+// const { transactionInstance } = require('../dataBase').getInstance();
+// const { WELCOME } = require('../constants/email-actions.enum');
+// const { ErrorHandler, errors } = require('../error');
+// const { hash } = require('../helpers/password.helper');
+// const queryBuilder = require('../helpers/user.query-builder');
+const {userService } = require('../services');
 
 module.exports = {
-    createUser: (req, res) => {
+    createUser: async (req, res, next) => {
+        // const transaction = await transactionInstance();
         try {
-            console.log('********************************');
-            console.log(req.login);
-            console.log('********************************');
-            userService.insertUser(req.body);
+            // const {
+            //     avatar,
+            //     body: { password, email, name }
+            // } = req;
+            // const hashedPassword = await hash(password);
+            //
+            // Object.assign(req.body, { password: hashedPassword });
 
-            res.status(201).json('User crated');
+            const createUser = await userService.insertUser(req.body);
+
+            // if (avatar) {
+            //     const pathWithoutPublic = path.join('user', `${createUser.id}`, 'photos');
+            //     const photoDir = path.join(process.cwd(), 'public', pathWithoutPublic);
+            //     const fileExtension = avatar.name.split('.').pop();
+            //     const photoName = `${uuid}.${fileExtension}`;
+            //     const finalPhotoPath = path.join(pathWithoutPublic, photoName);
+            //
+            //     await fs.mkdir(photoDir, { recursive: true });
+            //     await avatar.mv(path.join(photoDir, photoName));
+            //
+            //     await userService.updateUserById(createUser.id, { avatar: finalPhotoPath }, transaction);
+            // }
+            //
+            // await emailService.sendMail(email, WELCOME, { userName: name });
+            // await transaction.commit();
+            res.status(201).json('User cerated');
         } catch (e) {
-            res.json(e.message);
+            // await transaction.rollback();
+            next(e);
         }
     },
 
-    getUserById: (req, res) => {
+    getUserByParams: async (req, res, next) => {
         try {
             const { userId } = req.params;
 
             if (userId < 0) {
-                throw new Error('User ID must be grater than 0');
+                throw new ErrorHandler(errors.NOT_VALID_ID.message, errors.NOT_VALID_ID.code);
             }
 
-            const user = userService.findUserById(userId);
-
-            if (!user) {
-                throw new Error('User not found');
-            }
+            const user = await userService.findUserByParams(userId);
 
             res.json(user);
         } catch (e) {
-            res.status(400).json(e.message);
+            next(e);
         }
     },
 
-    getUsers: (req, res) => {
+    getUsers: async (req, res, next) => {
         try {
-            const x = req.query;
+            // const where = queryBuilder(req.query);
+            const users = await userService.findUsers(req.body);
 
-            console.log(x);
-
-            // const user = userService.findUserById(userId);
-            //
-            // if (!user) {
-            //   throw new Error('User not found');
-            // }
-
-            res.json(x);
+            res.json(users);
         } catch (e) {
-            res.status(400).json(e.message);
+            next(e);
         }
     },
 
-    deleteUser: (req, res) => {
-        res.json('user deleted');
+    deleteUser: async (req, res,next) => {
+        try {
+            const {userId}= req.params
+            const  user = await userService.deleteUser(userId)
+            res.json(user ,'deleted');
+        }catch (e) {
+            next(e);
+        }
+
+    },
+    updateUser: async (req, res,next) => {
+        try {
+            const {userId}= req.params
+            const  user = await userService.updateUser(userId)
+            res.json(user,'user update');
+        }catch (e) {
+            next(e);
+        }
+
     }
 };
